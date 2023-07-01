@@ -121,7 +121,7 @@ def vote():
         mycursor.execute(sql, val)
         mydb.commit()
         
-    def get_voter_province(nic):#This Function get 
+    def get_voter_province(nic):#This Function get and return province of voter
         sql = "SELECT state_id FROM citizen where citizen_nic = %s;"
         val = (nic,)
         mycursor.execute(sql ,val)
@@ -131,7 +131,7 @@ def vote():
             return province 
         
     #print candidates List to user
-    def get_candidate_list(province):
+    def get_candidate_list(province): #This function get candidate list belong to voter's province
         sql = "SELECT candidate_id, candidate_name from candidate WHERE state_id=%s;"
         val = (province,)
         mycursor.execute(sql, val)
@@ -139,7 +139,7 @@ def vote():
         for x in my_result:
             print('     '+str(x[0])+" - "+str(x[1]))
     
-    def check_age(nic):
+    def check_age(nic):#this function check whether paticular person old enough to vote or not
         sql ="SELECT citizen_age FROM citizen where citizen_nic = %s;"
         val = (nic,)
         mycursor.execute(sql, val)
@@ -150,7 +150,7 @@ def vote():
         if age>18:
             return True
         
-    def voted(nic):
+    def voted(nic): #this function check whether citizen voted or not
         sql = "SELECT has_voted FROM citizen where citizen_nic = %s;"
         val = (nic,)
         mycursor.execute(sql, val)
@@ -161,7 +161,7 @@ def vote():
             else:
                 return False
     
-    def if_citizen(nic):
+    def if_citizen(nic):#This function check if a paticular person citizen or not
         mycursor.execute("SELECT citizen_nic FROM citizen;")
         my_result = mycursor.fetchall()
         for x in my_result:
@@ -171,16 +171,16 @@ def vote():
             else:
                 return False
     
-    def check_all_conditions(nic):
+    def check_all_conditions(nic):#This function check whether all condition true or not
         age=check_age(nic)
         vote= voted(nic)
         chk_citizen  = if_citizen(nic)
+        if chk_citizen == False:
+            print("Invalid Citizen ID or Not a valid citizen.")
         if age==False:
                 print("You are not old enough to vote!")
         if vote == False:
             print("You voted once!")
-        if chk_citizen == False:
-            print("Invalid Citizen ID or Not a valid citizen.")
         if age == True and vote == True and chk_citizen == True:
             return True
         else:
@@ -253,7 +253,7 @@ def add_state():
     
 #display result 
 def display_result():
-    def get_result():
+    def get_result():#This function get result of all candidates and add their names and result to arrays
         mycursor.execute("SELECT candidate_name, votes FROM candidate")
         my_result = mycursor.fetchall()
         names = []
@@ -274,7 +274,7 @@ def display_result():
         
         
 
-def main_menu():
+def main_menu():#This function display main menu
     print('     1.Add Citizen') 
     print('     2.Add Candidate')
     print('     3.Add Political Party')
@@ -289,13 +289,21 @@ def main_menu():
 while(True):
     choise = main_menu()
     if choise == 1:
-        add_citizen()
+        how_many = int(input("How many citizen do you want to add ? "))
+        for i in range(how_many):
+            add_citizen()
     elif choise == 2:
-        add_candidate()
+        how_many = int(input("How many candidates do you want to add ? "))
+        for i in range(how_many):
+            add_candidate()
     elif choise == 3:
-        add_politicalParty()
+        how_many = int(input("How many Political Parties do you want to add ? "))
+        for i in range(how_many):
+            add_politicalParty()
     elif choise == 4:
-        add_state()
+        how_many = int(input("How many states do you want to add ? "))
+        for i in range(how_many):
+            add_state()
     elif choise == 5:
         vote()
     elif choise == 6:
