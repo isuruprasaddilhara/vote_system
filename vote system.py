@@ -1,5 +1,7 @@
 import os
 import mysql.connector
+import matplotlib.pyplot as plt
+import numpy as np
 #estabilish database connection
 mydb = mysql.connector.connect(
   host="localhost",
@@ -44,16 +46,14 @@ class Candidate(Citizen,State):
         self.candidate_id = ''
         self.education = ''
     
-    def add_votes(self):
-        self.votes += 1
         
 
 ##FUNCTIONS WE NEED##############################################################
 #get political party
 def get_party():
     mycursor.execute("select party_id,party_name from political_party;")
-    myresult = mycursor.fetchall()
-    for x in myresult:
+    my_result = mycursor.fetchall()
+    for x in my_result:
         print('     '+x[0]+"."+x[1])
     political_party = input("Select political party[by number]: ")
     return political_party
@@ -61,8 +61,8 @@ def get_party():
 #get state from user
 def get_state():
     mycursor.execute("select state_id,state_name from states;")
-    myresult=mycursor.fetchall()
-    for x in myresult:
+    my_result=mycursor.fetchall()
+    for x in my_result:
         print('     '+str(x[0])+"."+x[1])
     state = input("Select state[by number]: ")
     return state
@@ -111,43 +111,107 @@ def add_citizen():
     os.system('cls')
     
 def vote():
-    #has voted or not
+    #save the voted citizen to database
     def has_vote(nic):
         sql = "UPDATE citizen SET has_voted = 1 WHERE citizen_nic = %s"
         val = (nic,)
         mycursor.execute(sql, val)
         mydb.commit()
-        print(mycursor.rowcount, "record(s) affected") 
+        
+    def get_voter_province(nic):
+        sql = "SELECT state_id FROM citizen where citizen_nic = %s;"
+        val = (nic,)
+        mycursor.execute(sql ,val)
+        my_result = mycursor.fetchall()
+        for x in my_result:
+            province=x[0]
+            return province 
         
     #print candidates List to user
-    def get_candidate_list():
-        mycursor.execute("select candidate_id, candidate_name from candidate;")
-        myresult = mycursor.fetchall()
-        for x in myresult:
+    def get_candidate_list(province):
+        sql = "SELECT candidate_id, candidate_name from candidate WHERE state_id=%s;"
+        val = (province,)
+        mycursor.execute(sql, val)
+        my_result = mycursor.fetchall()
+        for x in my_result:
             print('     '+str(x[0])+" - "+str(x[1]))
+    
+    def check_age(nic):
+        sql ="SELECT citizen_age FROM citizen where citizen_nic = %s;"
+        val = (nic,)
+        mycursor.execute(sql, val)
+        my_result = mycursor.fetchall()
+        age =0
+        for x in my_result:
+            age = x[0]
+        if age>18:
+            return True
+        
+    def voted(nic):
+        sql = "SELECT has_voted FROM citizen where citizen_nic = %s;"
+        val = (nic,)
+        mycursor.execute(sql, val)
+        my_result = mycursor.fetchall()
+        for x in my_result:
+            if x[0]==0:
+                return True
+            else:
+                return False
+    
+    def if_citizen(nic):
+        mycursor.execute("SELECT citizen_nic FROM citizen;")
+        my_result = mycursor.fetchall()
+        for x in my_result:
+            if x[0]==nic:
+                return True
+                break
+            else:
+                return False
+    
+    def check_all_conditions(nic):
+        age=check_age(nic)
+        vote= voted(nic)
+        chk_citizen  = if_citizen(nic)
+        if age==False:
+                print("You are not old enough to vote!")
+        if vote == False:
+            print("You voted once!")
+        if chk_citizen == False:
+            print("Invalid Citizen ID or Not a valid citizen.")
+        if age == True and vote == True and chk_citizen == True:
+            return True
+        else:
+            return False
+       
+       
+            
     citizen_nic = input("Enter your NIC : ")
     
-    for i in range(3):
-        get_candidate_list()
-        count = str(i+1)
-        preferense = input("Enter Preference {$count} : ")
-        #get vote count belong to that candidate
-        sql = "SELECT votes FROM candidate where candidate_id = %s;"
-        val = (preferense,)
-        mycursor.execute(sql, val)
-        result = mycursor.fetchall()
-        for x in result:
-            str_result = x[0];
-        vote_count = int(str_result)+1#add votes
-        #save new votes to database
-        sql = "UPDATE candidate SET votes = %s where candidate_id = %s"
-        val = (vote_count,preferense)
-        mycursor.execute(sql, val)
-        mydb.commit()
-        print("\n")
-        print(mycursor.rowcount, "record inserted.")
-        os.system('cls')
-    has_vote(citizen_nic)
+    all_conditions = check_all_conditions(citizen_nic)
+    
+    if all_conditions == True:
+        province = get_voter_province(citizen_nic)
+        for i in range(3):
+            get_candidate_list(province)
+            count = str(i+1)
+            preferense = input("Enter Candidate id to vote : ")
+            #get vote count belong to that candidate
+            sql = "SELECT votes FROM candidate where candidate_id = %s;"
+            val = (preferense,)
+            mycursor.execute(sql, val)
+            result = mycursor.fetchall()
+            for x in result:
+                str_result = x[0];
+            vote_count = int(str_result)+1#add votes
+            #save new votes to database
+            sql = "UPDATE candidate SET votes = %s where candidate_id = %s"
+            val = (vote_count,preferense)
+            mycursor.execute(sql, val)
+            mydb.commit()
+            print("\n")
+            print("\n----------------------------------\n")
+        has_vote(citizen_nic)
+    
     to_exit = input("Hit Enter to exit...")
     os.system('cls')
 
@@ -183,6 +247,29 @@ def add_state():
     print(mycursor.rowcount, "record inserted.")
     to_exit = input("Hit Enter to exit...")
     os.system('cls')
+    
+#display result 
+def display_result():
+    def get_result():
+        mycursor.execute("SELECT candidate_name, votes FROM candidate")
+        my_result = mycursor.fetchall()
+        names = []
+        votes = []
+        for x in my_result:
+            names.append(x[0])
+            votes.append(x[1])
+        return names,votes
+    
+    name_array,vote_array = get_result()
+    
+    x = np.array(name_array)
+    y = np.array(vote_array)
+
+    plt.bar(x,y)
+    plt.show()
+
+        
+        
 
 def main_menu():
     print('     1.Add Citizen') 
@@ -190,7 +277,8 @@ def main_menu():
     print('     3.Add Political Party')
     print('     4.Add State')
     print('     5.Vote')
-    print('     6.exit')
+    print('     6.Display Result')
+    print('     7.exit')
         
     choise = int(input("What do you want to do ? "))
     return choise
@@ -208,6 +296,8 @@ while(True):
     elif choise == 5:
         vote()
     elif choise == 6:
+        display_result()
+    elif choise == 7:
         os.system('cls')
         break
     else:
