@@ -12,11 +12,13 @@ mydb = mysql.connector.connect(
 
 mycursor = mydb.cursor()
 
+#Create tables
 mycursor.execute("CREATE TABLE IF NOT EXISTS political_party(party_id varchar(5), party_name varchar(255), party_leader varchar(100), number_of_members int , primary key(party_id));")
 mycursor.execute("CREATE TABLE IF NOT EXISTS states(state_id int(3), state_name varchar(100), primary key(state_id));")
 mycursor.execute("CREATE TABLE IF NOT EXISTS citizen(citizen_nic varchar(10), citizen_name varchar(255), citizen_age int(3), state_id int, has_voted int default 0, foreign key(state_id) references states(state_id),primary key(citizen_nic)); ")
 mycursor.execute("CREATE TABLE IF NOT EXISTS candidate(candidate_id int, candidate_name varchar(255), candidate_nic varchar(255), candidate_age int, candidate_education varchar(255), votes int default 0, primary key(candidate_id), state_id int, foreign key(state_id) references states(state_id),party_id varchar(100), foreign key(party_id) references political_party(party_id));")
 
+#create classes
 class State:
     def __init__(self):
         self.state_id = ''
@@ -101,6 +103,7 @@ def add_citizen():
     citizen.age = int(input("Enter your age : "))
     citizen.state_id = get_state()
     
+    #save citizen details to database
     sql = "INSERT INTO citizen(citizen_nic, citizen_name, citizen_age, state_id) VALUES (%s, %s, %s, %s)"
     val = (citizen.NIC, citizen.name, citizen.age, citizen.state_id)
     mycursor.execute(sql, val)
@@ -112,13 +115,13 @@ def add_citizen():
     
 def vote():
     #save the voted citizen to database
-    def has_vote(nic):
+    def has_vote(nic):#this function update database after user votes
         sql = "UPDATE citizen SET has_voted = 1 WHERE citizen_nic = %s"
         val = (nic,)
         mycursor.execute(sql, val)
         mydb.commit()
         
-    def get_voter_province(nic):
+    def get_voter_province(nic):#This Function get 
         sql = "SELECT state_id FROM citizen where citizen_nic = %s;"
         val = (nic,)
         mycursor.execute(sql ,val)
