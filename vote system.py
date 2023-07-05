@@ -167,18 +167,15 @@ def vote():
         for x in my_result:
             if x[0]==nic:
                 return True
-                break
-            else:
-                return False
     
     def check_all_conditions(nic):#This function check whether all condition true or not
         age=check_age(nic)
         vote= voted(nic)
         chk_citizen  = if_citizen(nic)
-        if chk_citizen == False:
+        if chk_citizen != True:
             print("Invalid Citizen ID or Not a valid citizen.")
-        if age==False:
-                print("You are not old enough to vote!")
+        if age!=True:
+            print("You are not old enough to vote!")
         if vote == False:
             print("You voted once!")
         if age == True and vote == True and chk_citizen == True:
@@ -252,9 +249,11 @@ def add_state():
     os.system('cls')
     
 #display result 
-def display_result():
-    def get_result():#This function get result of all candidates and add their names and result to arrays
-        mycursor.execute("SELECT candidate_name, votes FROM candidate")
+def display_result() :
+    def get_result(province):#This function get result of all candidates and add their names and result to arrays
+        sql = "SELECT candidate_name, votes FROM candidate where state_id = %s"
+        val = (province,)
+        mycursor.execute(sql, val)
         my_result = mycursor.fetchall()
         names = []
         votes = []
@@ -262,8 +261,8 @@ def display_result():
             names.append(x[0])
             votes.append(x[1])
         return names,votes
-    
-    name_array,vote_array = get_result()
+    province = get_state()
+    name_array,vote_array = get_result(province)
     
     x = np.array(name_array)
     y = np.array(vote_array)
