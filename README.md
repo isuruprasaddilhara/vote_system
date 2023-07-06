@@ -1,5 +1,6 @@
 # vote_system
-prerequest
+prerequisite
+
 install matplotlib package  - pip install matplotlib
 
 install numpy package - pip install numpy
