@@ -269,47 +269,165 @@ def display_result() :
 
     plt.bar(x,y)
     plt.show()
+    
+    to_exit = input("Hit Enter to exit...")
+    os.system('cls')
 
-        
-        
+#delete a province(state) from states
+def delete_province():
+    province_id = get_state()
+    sql = "DELETE FROM states WHERE state_id = %s"
+    val = (province_id,)
+    mycursor.execute(sql, val)
 
-def main_menu():#This function display main menu
+    mydb.commit()
+    print(mycursor.rowcount, " record(s) deleted")
+    print("\n")
+
+    to_exit = input("Hit Enter to exit...")
+    os.system('cls')
+    
+#delete a record from political_party
+def delete_party():
+    party_id = get_party()
+    sql = "DELETE FROM political_party WHERE party_id = %s"
+    val = (party_id,)
+    mycursor.execute(sql, val)
+
+    mydb.commit()
+    print(mycursor.rowcount, " record(s) deleted")
+    print("\n")
+
+    to_exit = input("Hit Enter to exit...")
+    os.system('cls')
+
+#delete a record from citizen
+def delete_citizen():
+    def get_citizen():
+        mycursor.execute("SELECT citizen_nic, citizen_name FROM citizen;")
+        my_result = mycursor.fetchall()
+        print("\n")
+        for x in my_result:
+            print('     '+ x[0] +' - ' + x[1])
+        nic_to_delete = input("\nEnter NIC to delete : ")
+        return nic_to_delete
+        
+    citizen_id = get_citizen()
+    sql = "DELETE FROM citizen WHERE citizen_nic = %s"
+    val = (citizen_id,)
+    mycursor.execute(sql, val)
+    
+    mydb.commit()
+    print(mycursor.rowcount, " record(s) deleted")
+    print("\n")
+
+    to_exit = input("Hit Enter to exit...")
+    os.system('cls')
+    
+
+#delete a record from candidate
+def delete_candidate():
+    def get_candidate():
+        mycursor.execute("SELECT candidate_id, candidate_name FROM candidate;")
+        my_result = mycursor.fetchall()
+        print("\n")
+        for x in my_result:
+            print('     '+ str(x[0]) +' - ' + x[1])
+        candidate_id = input("\nEnter Candidate ID to delete : ")
+        return candidate_id
+    candidate_id = get_candidate()
+    sql = "DELETE FROM candidate WHERE candidate_id = %s"
+    val = (candidate_id,)
+    mycursor.execute(sql, val)
+    
+    mydb.commit()
+    print(mycursor.rowcount, " record(s) deleted")
+    print("\n")
+    to_exit = input("Hit Enter to exit...")
+    os.system('cls')
+ 
+
+def admin_main_menu():#This function display main menu
     print('     1.Add Citizen') 
-    print('     2.Add Candidate')
-    print('     3.Add Political Party')
-    print('     4.Add State')
-    print('     5.Vote')
-    print('     6.Display Result')
-    print('     7.exit')
+    print('     2.Delete Citizen')
+    print('     3.Add Candidate')
+    print('     4.Delete Candidate')
+    print('     5.Add Political Party')
+    print('     6.Delete Political Party')
+    print('     7.Add State')
+    print('     8.Delete State')
+    print('     9.Display Result')
+    print('     10.exit')
         
     choise = int(input("What do you want to do ? "))
     return choise
 
-while(True):
-    choise = main_menu()
-    if choise == 1:
-        how_many = int(input("How many citizen do you want to add ? "))
-        for i in range(how_many):
-            add_citizen()
-    elif choise == 2:
-        how_many = int(input("How many candidates do you want to add ? "))
-        for i in range(how_many):
-            add_candidate()
-    elif choise == 3:
-        how_many = int(input("How many Political Parties do you want to add ? "))
-        for i in range(how_many):
-            add_politicalParty()
-    elif choise == 4:
-        how_many = int(input("How many states do you want to add ? "))
-        for i in range(how_many):
-            add_state()
-    elif choise == 5:
-        vote()
-    elif choise == 6:
-        display_result()
-    elif choise == 7:
-        os.system('cls')
-        break
-    else:
-        print("Invalid choise")
+def voter_main_menu():
+    print('     1.Vote')
+    print('     2.exit')
+    choise = int(input("What do you want to do ? "))
+    return choise
+
+def get_role():
+    print("     1.admin")
+    print("     2.voter\n")
+    choise = int(input("Select your role[by ID] : "))
+    return choise
     
+role = get_role()
+
+if(role == 1):
+    while(True):
+        choise = admin_main_menu()
+        if choise == 1:
+            how_many = int(input("How many citizen do you want to add ? "))
+            for i in range(how_many):
+                add_citizen()
+                
+        elif choise == 2:
+            delete_citizen()
+            
+        elif choise == 3:
+            how_many = int(input("How many candidate do you want to add ? "))
+            for i in range(how_many):
+                add_candidate()
+                
+        elif choise == 4:
+            delete_candidate()
+        elif choise == 5:
+            how_many = int(input("How many Political Parties do you want to add ? "))
+            for i in range(how_many):
+                add_politicalParty()
+                
+        elif choise == 6:
+            delete_party()
+            
+        elif choise == 7:
+            how_many = int(input("How many states do you want to add ? "))
+            for i in range(how_many):
+                add_state()
+                
+        elif choise == 8:
+            delete_province()
+            
+        elif choise == 9:
+            display_result()
+            
+        elif choise == 10:
+            os.system('cls')
+            break
+        
+        else:
+            print("Invalid choise")
+    
+elif (role == 2):
+    while(True):
+        choise = voter_main_menu()
+        if(choise == 1):
+            vote()
+        elif(choise == 2):
+            os.system('cls')
+            break
+else:
+    print("Invalid input! Enter your role by id[1 or 2]!")
+        
